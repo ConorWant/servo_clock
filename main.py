@@ -1,6 +1,7 @@
 from adafruit_servokit import ServoKit
 
-CHANNELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
+BOARD1_CHANNELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+BOARD2_CHANNELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 PULSE_MIN = 500
 PULSE_MAX = 2500
 
@@ -22,11 +23,16 @@ def get_angle():
         return angle
     except ValueError:
         print("Invalid input, enter an angle between 0 and 180 (q to quit)")
+        return get_angle()
         
 def main():
-    kit = ServoKit(channels=16)
-    for ch in CHANNELS:
-        kit.servo[ch].set_pulse_width_range(PULSE_MIN, PULSE_MAX)
+    kit1 = ServoKit(channels=16, address=0x40)
+    kit2 = ServoKit(channels=16, address=0x41)
+    
+    for ch in BOARD1_CHANNELS:
+        kit1.servo[ch].set_pulse_width_range(PULSE_MIN, PULSE_MAX)
+    for ch in BOARD2_CHANNELS:
+        kit2.servo[ch].set_pulse_width_range(PULSE_MIN, PULSE_MAX)
     
     while True:
         angle = get_angle()
@@ -35,7 +41,8 @@ def main():
             print("Thank you, Bye!")
             break
         
-        move_servos(kit, CHANNELS, angle)
+        move_servos(kit1, BOARD1_CHANNELS, angle)
+        move_servos(kit2, BOARD2_CHANNELS, angle)
         
 if __name__ == "__main__":
     main()
