@@ -1,99 +1,66 @@
 from adafruit_servokit import ServoKit
+from datetime import datetime
+from time import sleep
 
-BOARD1_CHANNELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-BOARD2_CHANNELS = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+CHANNELS = list(range(0, 14))
 PULSE_MIN = 500
 PULSE_MAX = 2500
+SERVO_ON_ANGLE = 180
+SERVO_OFF_ANGLE = 100
 GROUP1 = list(range(0, 7))
 GROUP2 = list(range(7, 14))
+
+DIGIT_SEGMENTS = {
+    "0": [0, 1, 2, 3, 4, 5],
+    "1": [1, 2],
+    "2": [0, 1, 3, 4, 6],
+    "3": [0, 1, 2, 3, 6],
+    "4": [1, 2, 5, 6],
+    "5": [0, 2, 3, 5, 6],
+    "6": [0, 2, 3, 4, 5, 6],
+    "7": [0, 1, 2],
+    "8": [0, 1, 2, 3, 4, 5, 6],
+    "9": [0, 1, 2, 3, 5, 6],
+}
 
 
 def servo_on(kit, channels):
     for ch in channels:
-        kit.servo[ch].angle = 180
+        kit.servo[ch].angle = SERVO_ON_ANGLE
+
 
 def servo_off(kit, channels):
     for ch in channels:
-        kit.servo[ch].angle = 120
-          
-def one(kit):
-    channels = [1, 2]
-    servo_on(kit, channels)
-        
-def two(kit):
-    channels = [0, 1, 3, 4, 6]
-    servo_on(kit, channels)
-    
-def three(kit):
-    channels = [0, 1, 2, 3, 6]
-    servo_on(kit, channels) 
-       
-def four(kit):
-    channels = [1, 2, 5, 6]
-    servo_on(kit, channels)
-        
-def five(kit):
-    channels = [0, 2, 3, 5, 6]
-    servo_on(kit, channels)
-       
-def six(kit):
-    channels = [0, 2, 3, 4, 5, 6]
-    servo_on(kit, channels)
-        
-def seven(kit):
-    channels = [0, 1, 2]
-    servo_on(kit, channels)
-        
-def eight(kit):
-    channels = [0, 1, 2, 3, 4, 5, 6]
-    servo_on(kit, channels)
-    
-def nine(kit):
-    channels = [0, 1, 2, 3, 5, 6]
-    servo_on(kit, channels)
-       
-def zero(kit):
-    channels = [0, 1, 2, 3, 4, 5]
-    servo_on(kit, channels)
-            
+        kit.servo[ch].angle = SERVO_OFF_ANGLE
+
+
+def change_number(kit, group, number):
+    if number in DIGIT_SEGMENTS:
+        servo_off(kit, group)
+        servo_on(kit, DIGIT_SEGMENTS[number])
+
+
 def main():
     kit1 = ServoKit(channels=16, address=0x40)
     kit2 = ServoKit(channels=16, address=0x41)
-    
-    for ch in BOARD1_CHANNELS:
-        kit1.servo[ch].set_pulse_width_range(PULSE_MIN, PULSE_MAX)
-    for ch in BOARD2_CHANNELS:
-        kit2.servo[ch].set_pulse_width_range(PULSE_MIN, PULSE_MAX)
-        
-    servo_off(kit2, GROUP1)
-    
-    
-    NUMBERS = {
-        "0": zero,
-        "1": one,
-        "2": two,
-        "3": three,
-        "4": four,
-        "5": five,
-        "6": six,
-        "7": seven,
-        "8": eight,
-        "9": nine,
-    }
 
-    while True:
-        user_input = input("Type a number: ")
+    for kit in (kit1, kit2):
+        for ch in CHANNELS:
+            kit.servo[ch].set_pulse_width_range(PULSE_MIN, PULSE_MAX)
+        servo_off(kit, GROUP1)
+        servo_off(kit, GROUP2)
 
-        if user_input.lower() == "q":
-            break
-        elif user_input in NUMBERS:
-            servo_off(kit2, GROUP1)
-            NUMBERS[user_input](kit2)
-
-        else:
-            servo_off(kit2, GROUP1)
-                
-
+    try:
+        while True:
+            second = datetime.now().strftime("%S")[1]
+            print(second)
+            change_number(kit2, GROUP1, second)
+            sleep(1)
             
+    except KeyboardInterrupt:
+        for kit in (kit1, kit2):
+            servo_off(kit, GROUP1)
+            servo_off(kit, GROUP2)
+
 if __name__ == "__main__":
     main()
