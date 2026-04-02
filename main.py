@@ -36,8 +36,9 @@ def servo_off(kit, channels):
 
 def change_number(kit, group, number):
     if number in DIGIT_SEGMENTS:
-        servo_off(kit, group)
-        servo_on(kit, DIGIT_SEGMENTS[number])
+        offset = group[0]
+       	servo_off(kit, group)
+       	servo_on(kit, [ch + offset for ch in DIGIT_SEGMENTS[number]])
 
 
 def main():
@@ -54,7 +55,7 @@ def main():
         while True:
             second = datetime.now().strftime("%S")[1]
             print(second)
-            change_number(kit2, GROUP1, second)
+            change_number(kit2, GROUP2, second)
             sleep(1)
             
     except KeyboardInterrupt:
