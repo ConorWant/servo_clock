@@ -5,8 +5,8 @@ from time import sleep
 CHANNELS = list(range(0, 14))
 PULSE_MIN = 500
 PULSE_MAX = 2500
-SERVO_ON_ANGLE = 180
-SERVO_OFF_ANGLE = 100
+SERVO_ON_ANGLE = 100
+SERVO_OFF_ANGLE = 20
 GROUP1 = list(range(0, 7))
 GROUP2 = list(range(7, 14))
 
@@ -52,10 +52,20 @@ def main():
         servo_off(kit, GROUP2)
 
     try:
+        last = {"h_a": None, "h_b": None, "m_a": None, "m_b": None}
+
         while True:
-            second = datetime.now().strftime("%S")[1]
-            print(second)
-            change_number(kit2, GROUP2, second)
+            hour_a = datetime.now().strftime("%H")[0]
+            hour_b = datetime.now().strftime("%H")[1]
+            minute_a = datetime.now().strftime("%M")[0]
+            minute_b = datetime.now().strftime("%M")[1]
+
+            
+            if hour_a  != last["h_a"]:  change_number(kit1, GROUP1, hour_a);  last["h_a"] = hour_a
+            if hour_b  != last["h_b"]:  change_number(kit1, GROUP2, hour_b);  last["h_b"] = hour_b
+            if minute_a != last["m_a"]: change_number(kit2, GROUP1, minute_a); last["m_a"] = minute_a
+            if minute_b != last["m_b"]: change_number(kit2, GROUP2, minute_b); last["m_b"] = minute_b
+
             sleep(1)
             
     except KeyboardInterrupt:
